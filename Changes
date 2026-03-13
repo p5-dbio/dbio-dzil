@@ -1,0 +1,6 @@
+Release history for Dist-Zilla-PluginBundle-DBIO
+
+0.001
+  - Initial release
+  - Standard plugin configuration for all DBIO distributions
+  - Pod::Weaver bundle with =attr and =method collectors
