@@ -1,6 +1,6 @@
 package Pod::Weaver::PluginBundle::DBIO;
 # ABSTRACT: Pod::Weaver configuration for DBIO distributions
-our $VERSION = '0.001';
+our $VERSION = '0.900000';
 use strict;
 use warnings;
 
@@ -35,7 +35,11 @@ Collected into a B<METHODS> section.
 
 =head1 COPYRIGHT NOTICE
 
-The Legal section generates a custom dual copyright notice:
+Default (new DBIO code):
+
+  Copyright (C) 2026 DBIO Authors
+
+With C<heritage = 1> (code derived from DBIx::Class):
 
   Copyright (C) 2026 DBIO Authors
   Portions Copyright (C) 2005-2025 DBIx::Class Authors
@@ -47,6 +51,9 @@ use Pod::Weaver::Config::Assembler;
 sub _exp { Pod::Weaver::Config::Assembler->expand_package($_[0]) }
 
 sub mvp_bundle_config {
+  my ($self, $args) = @_;
+  my $heritage = $args->{heritage} || 0;
+
   my @plugins;
   push @plugins, (
     [ '@DBIO/CorePrep',       _exp('@CorePrep'),       {} ],
@@ -78,8 +85,10 @@ sub mvp_bundle_config {
       is_template => 0,
       text        => [
         'Copyright (C) 2026 DBIO Authors',
-        'Portions Copyright (C) 2005-2025 DBIx::Class Authors',
-        'Based on DBIx::Class, heavily modified.',
+        ($heritage ? (
+          'Portions Copyright (C) 2005-2025 DBIx::Class Authors',
+          'Based on DBIx::Class, heavily modified.',
+        ) : ()),
         '',
         'This is free software; you can redistribute it and/or modify it under',
         'the same terms as the Perl 5 programming language system itself.',

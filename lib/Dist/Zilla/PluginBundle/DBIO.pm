@@ -1,36 +1,37 @@
 package Dist::Zilla::PluginBundle::DBIO;
 # ABSTRACT: Dist::Zilla plugin bundle for DBIO distributions
-our $VERSION = '0.001';
+our $VERSION = '0.900000';
 use Moose;
 use Dist::Zilla;
 with 'Dist::Zilla::Role::PluginBundle::Easy';
 
 =head1 SYNOPSIS
 
-  # Driver dist.ini — that's all you need
-  name = DBIO-MyDriver
-  author = DBIO & DBIx::Class Authors
+  # New DBIO distribution (default)
+  name = DBIO-PostgreSQL-Async
+  author = DBIO Authors
   license = Perl_5
 
   [@DBIO]
 
-  # DBIO core dist.ini
+  # Distribution derived from DBIx::Class code
+  name = DBIO-PostgreSQL
+  author = DBIO Authors
+  license = Perl_5
+
+  [@DBIO]
+  heritage = 1
+
+  # DBIO core
   name = DBIO
-  author = DBIx::Class & DBIO Contributors (see AUTHORS file)
+  author = DBIO Authors
   license = Perl_5
   copyright_holder = DBIO Contributors
   copyright_year = 2005
 
   [@DBIO]
   core = 1
-
-  [MetaNoIndex]
-  directory = lib/DBIO/Admin
-  ; ...
-
-  [MetaResources]
-  repository.type = git
-  ; ...
+  heritage = 1
 
 =head1 DESCRIPTION
 
@@ -58,6 +59,20 @@ has core => (
   isa     => 'Bool',
   lazy    => 1,
   default => sub { $_[0]->payload->{core} },
+);
+
+=attr heritage
+
+Set to 1 for distributions derived from DBIx::Class code. Adds
+DBIx::Class copyright attribution to generated POD. Default: 0.
+
+=cut
+
+has heritage => (
+  is      => 'ro',
+  isa     => 'Bool',
+  lazy    => 1,
+  default => sub { $_[0]->payload->{heritage} || 0 },
 );
 
 sub configure {
@@ -100,9 +115,12 @@ sub configure {
     $self->add_plugins('VersionFromMainModule');
   }
 
-  # POD
+  # POD — pass heritage flag to PodWeaver bundle
   $self->add_plugins([
-    PodWeaver => { config_plugin => '@DBIO' }
+    PodWeaver => {
+      config_plugin => '@DBIO',
+      $self->heritage ? ( 'heritage' => 1 ) : (),
+    }
   ]);
 
   # Tests
@@ -141,18 +159,24 @@ sub configure {
   # Release workflow
   if ($self->core) {
     # Core: simple git workflow, version from module
+    # NextRelease replaces {{$NEXT}} in Changes with version + date
+    $self->add_plugins([ 'NextRelease' => {
+      format => '%-9v %{yyyy-MM-dd}d',
+    }]);
     $self->add_plugins(
-      'Git::Commit',
+      [ 'Git::Commit' => { allow_dirty => [qw( dist.ini Changes cpanfile )] } ],
       [ 'Git::Tag' => { tag_format => 'v%V' } ],
       'Git::Push',
     );
   } else {
     # Drivers: version from git tags
+    # @Git::VersionManager includes NextRelease
     $self->add_bundle('@Git::VersionManager' => {
       'RewriteVersion::Transitional.fallback_version_provider' => 'Git::NextVersion',
       'RewriteVersion::Transitional.global' => 1,
       'Git::NextVersion.first_version' => '0.900000',
       'Git::Tag.tag_format' => 'v%V',
+      'NextRelease.format' => '%-9v %{yyyy-MM-dd}d',
     });
 
     $self->add_plugins([
