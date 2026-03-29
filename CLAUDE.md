@@ -16,11 +16,8 @@ The standard Dist::Zilla plugin bundle for all DBIO distributions. Provides a fi
 ```ini
 # dist.ini
 name = DBIO-MyDriver
-version = 0.001
-author = Torsten Raudssus <torsten@raudss.us>
+author = DBIO Authors
 license = Perl_5
-copyright_holder = Torsten Raudssus
-copyright_year = 2026
 
 [@DBIO]
 ```

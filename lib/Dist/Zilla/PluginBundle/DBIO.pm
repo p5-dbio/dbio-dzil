@@ -7,31 +7,31 @@ with 'Dist::Zilla::Role::PluginBundle::Easy';
 
 =head1 SYNOPSIS
 
-  # New DBIO distribution (default)
+  # New DBIO distribution — copyright_holder defaults to "DBIO Authors"
   name = DBIO-PostgreSQL-Async
   author = DBIO Authors
   license = Perl_5
 
   [@DBIO]
 
-  # Distribution derived from DBIx::Class code
+  # Distribution derived from DBIx::Class code — copyright_holder defaults to "DBIO & DBIx::Class Authors"
   name = DBIO-PostgreSQL
-  author = DBIO Authors
+  author = DBIO & DBIx::Class Authors
   license = Perl_5
 
   [@DBIO]
   heritage = 1
 
-  # DBIO core
+  # DBIO core — explicit copyright_holder override, copyright from 2005
   name = DBIO
-  author = DBIO Authors
+  author = DBIx::Class & DBIO Contributors (see AUTHORS file)
   license = Perl_5
-  copyright_holder = DBIO Contributors
   copyright_year = 2005
 
   [@DBIO]
   core = 1
   heritage = 1
+  copyright_holder = DBIO Contributors
 
 =head1 DESCRIPTION
 
@@ -75,8 +75,28 @@ has heritage => (
   default => sub { $_[0]->payload->{heritage} || 0 },
 );
 
+=attr copyright_holder
+
+Override the copyright holder string. If not set, defaults to C<DBIO & DBIx::Class Authors>
+for heritage distributions and C<DBIO Authors> for all others.
+
+=cut
+
+has copyright_holder => (
+  is      => 'ro',
+  isa     => 'Maybe[Str]',
+  lazy    => 1,
+  default => sub { $_[0]->payload->{copyright_holder} },
+);
+
 sub configure {
   my ($self) = @_;
+
+  # Set copyright_holder on the zilla object based on heritage flag,
+  # unless overridden via payload (e.g. core sets copyright_holder = DBIO Contributors)
+  my $holder = $self->copyright_holder
+    // ( $self->heritage ? 'DBIO & DBIx::Class Authors' : 'DBIO Authors' );
+  $self->zilla->meta->get_attribute('copyright_holder')->set_value($self->zilla, $holder);
 
   # File gathering — core has extra excludes
   my @exclude_filenames = qw(
