@@ -1,6 +1,6 @@
 package Dist::Zilla::PluginBundle::DBIO;
 # ABSTRACT: Dist::Zilla plugin bundle for DBIO distributions
-our $VERSION = '0.900000';
+our $VERSION = '0.900001';
 use Moose;
 use Dist::Zilla;
 with 'Dist::Zilla::Role::PluginBundle::Easy';
