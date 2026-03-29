@@ -8,28 +8,22 @@ with 'Dist::Zilla::Role::PluginBundle::Easy';
 =head1 SYNOPSIS
 
   # Standard DBIO driver distribution
-  name    = DBIO-MyDriver
-  author  = DBIO Authors
-  license = Perl_5
+  name = DBIO-MyDriver
 
   [@DBIO]
 
   # Distribution containing code derived from DBIx::Class
-  name    = DBIO-PostgreSQL
-  author  = DBIO & DBIx::Class Authors
-  license = Perl_5
+  name = DBIO-PostgreSQL
 
   [@DBIO]
   heritage = 1
 
   # DBIO core distribution
   name           = DBIO
-  author         = DBIx::Class & DBIO Contributors (see AUTHORS file)
-  license        = Perl_5
   copyright_year = 2005
 
   [@DBIO]
-  core    = 1
+  core     = 1
   heritage = 1
 
 =head1 DESCRIPTION
@@ -142,10 +136,10 @@ has copyright_holder => (
 sub configure {
   my ($self) = @_;
 
-  # Set copyright_holder via an inner BeforeBuild plugin — bundles have no $self->zilla
-  my $holder = $self->copyright_holder
-    // ( $self->heritage ? 'DBIO & DBIx::Class Authors' : 'DBIO Authors' );
-  $self->add_plugins([ 'DBIO::SetCopyrightHolder' => { holder => $holder } ]);
+  # Set author and copyright_holder via an inner BeforeBuild plugin — bundles have no $self->zilla
+  my $author = $self->heritage ? 'DBIO & DBIx::Class Authors' : 'DBIO Authors';
+  my $holder = $self->copyright_holder // $author;
+  $self->add_plugins([ 'DBIO::SetMeta' => { author => $author, holder => $holder } ]);
 
   # LICENSE is always committed in the repo and gathered from git.
   my @exclude_filenames = qw(
@@ -256,17 +250,22 @@ __PACKAGE__->meta->make_immutable;
 
 no Moose;
 
-package Dist::Zilla::Plugin::DBIO::SetCopyrightHolder;
+package Dist::Zilla::Plugin::DBIO::SetMeta;
 use Moose;
 with 'Dist::Zilla::Role::Plugin', 'Dist::Zilla::Role::BeforeBuild';
 
+has author => (is => 'ro', isa => 'Str', required => 1);
 has holder => (is => 'ro', isa => 'Str', required => 1);
 
 sub before_build {
   my ($self) = @_;
   my $zilla = $self->zilla;
-  my ($attr) = grep { $_->name eq '_copyright_holder' } $zilla->meta->get_all_attributes;
-  $attr->set_value($zilla, $self->holder);
+
+  my %attr = map { $_->name => $_ } $zilla->meta->get_all_attributes;
+
+  $attr{authors}->set_value($zilla, [$self->author]);
+  $attr{_copyright_holder}->set_value($zilla, $self->holder);
+  $attr{_license_class}->set_value($zilla, 'Perl_5');
 }
 
 __PACKAGE__->meta->make_immutable;

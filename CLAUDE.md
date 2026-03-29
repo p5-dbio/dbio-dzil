@@ -16,8 +16,6 @@ The standard Dist::Zilla plugin bundle for all DBIO distributions. Provides a fi
 ```ini
 # New DBIO distribution
 name = DBIO-MyDriver
-author = DBIO Authors
-license = Perl_5
 
 [@DBIO]
 ```
@@ -25,8 +23,6 @@ license = Perl_5
 ```ini
 # Distribution derived from DBIx::Class code
 name = DBIO-PostgreSQL
-author = DBIO & DBIx::Class Authors
-license = Perl_5
 
 [@DBIO]
 heritage = 1
@@ -34,21 +30,20 @@ heritage = 1
 
 ```ini
 # DBIO core
-name = DBIO
-author = DBIx::Class & DBIO Contributors (see AUTHORS file)
-license = Perl_5
+name           = DBIO
 copyright_year = 2005
 
 [@DBIO]
-core = 1
+core     = 1
 heritage = 1
-copyright_holder = DBIO Contributors
 ```
 
 ## Key Behaviors
 
-- **`copyright_holder`**: set automatically — `heritage = 1` → `DBIO & DBIx::Class Authors`, otherwise → `DBIO Authors`. Override via `copyright_holder = ...` in the `[@DBIO]` section.
-- **LICENSE**: always committed in the repo and gathered from git. Heritage repos use the original DBIx::Class license with DBIO attribution header. Non-heritage repos use a standard Perl_5 license. No `[License]` plugin used.
+- **`author`**: set automatically — `heritage = 1` → `DBIO & DBIx::Class Authors`, otherwise → `DBIO Authors`. No `author =` needed in `dist.ini`.
+- **`license`**: always `Perl_5` in META, set automatically. No `license =` needed in `dist.ini`. No `[License]` plugin — LICENSE file is committed in every repo and gathered from git.
+- **`copyright_holder`**: set automatically — same logic as `author`. Override via `copyright_holder = ...` in the `[@DBIO]` section.
+- **LICENSE file**: always committed in the repo. Heritage repos use the original DBIx::Class license with DBIO attribution header. Non-heritage repos use a standard Perl_5 license.
 - **Version**: drivers use git tags (`first_version = 0.900000`); core uses `VersionFromMainModule`.
 - **POD**: `@DBIO` for new distributions; `@DBIO::Heritage` for heritage (adds DBIx::Class copyright block).
 
