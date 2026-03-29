@@ -115,11 +115,10 @@ sub configure {
     $self->add_plugins('VersionFromMainModule');
   }
 
-  # POD — pass heritage flag to PodWeaver bundle
+  # POD — heritage uses @DBIO::Heritage which sets heritage=1 in the payload
   $self->add_plugins([
     PodWeaver => {
-      config_plugin => '@DBIO',
-      $self->heritage ? ( 'heritage' => 1 ) : (),
+      config_plugin => $self->heritage ? '@DBIO::Heritage' : '@DBIO',
     }
   ]);
 
@@ -164,6 +163,8 @@ sub configure {
       format => '%-9v %{yyyy-MM-dd}d',
     }]);
     $self->add_plugins(
+      'ConfirmRelease',
+      'UploadToCPAN',
       [ 'Git::Commit' => { allow_dirty => [qw( dist.ini Changes cpanfile )] } ],
       [ 'Git::Tag' => { tag_format => 'v%V' } ],
       'Git::Push',
@@ -179,9 +180,11 @@ sub configure {
       'NextRelease.format' => '%-9v %{yyyy-MM-dd}d',
     });
 
-    $self->add_plugins([
-      'Git::Push' => { push_to => 'origin' },
-    ]);
+    $self->add_plugins(
+      'ConfirmRelease',
+      'UploadToCPAN',
+      [ 'Git::Push' => { push_to => 'origin' } ],
+    );
   }
 }
 

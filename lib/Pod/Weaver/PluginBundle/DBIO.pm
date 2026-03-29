@@ -52,7 +52,7 @@ sub _exp { Pod::Weaver::Config::Assembler->expand_package($_[0]) }
 
 sub mvp_bundle_config {
   my ($self, $args) = @_;
-  my $heritage = $args->{heritage} || 0;
+  my $heritage = ($args->{payload} && $args->{payload}{heritage}) || 0;
 
   my @plugins;
   push @plugins, (
