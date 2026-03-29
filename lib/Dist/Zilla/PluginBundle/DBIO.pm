@@ -37,18 +37,62 @@ with 'Dist::Zilla::Role::PluginBundle::Easy';
 
 Standard L<Dist::Zilla> plugin bundle for all DBIO distributions.
 
-For drivers: no configuration needed. Version comes from git tags.
+=head2 All distributions
 
-All distributions must have a C<LICENSE> file committed in the repository.
-It is included in the distribution as-is and displayed by GitHub directly.
-No license file is generated during the build.
+Every distribution using C<[@DBIO]> gets:
 
-For DBIO core: set C<core = 1> to use L<Dist::Zilla::Plugin::VersionFromMainModule>
-and L<Dist::Zilla::Plugin::MakeMaker::Awesome> instead.
+=over 4
+
+=item * L<Dist::Zilla::Plugin::Git::GatherDir> — gathers files from git
+
+=item * L<Dist::Zilla::Plugin::MetaProvides::Package> + L<Dist::Zilla::Plugin::Prereqs::FromCPANfile> — metadata from cpanfile
+
+=item * L<Dist::Zilla::Plugin::PodWeaver> — POD generation via C<@DBIO> or C<@DBIO::Heritage>
+
+=item * L<Dist::Zilla::Plugin::ExtraTests> — moves F<xt/> tests into F<t/> for release
+
+=item * L<Dist::Zilla::Plugin::GithubMeta> — auto-detects GitHub repository URL and issues link
+
+=item * L<Dist::Zilla::Plugin::Git::CheckFor::CorrectBranch> — enforces release from C<main>
+
+=back
+
+The C<LICENSE> file must be committed in the repository. It is included in
+the distribution as-is. No license file is generated during the build.
+Heritage distributions use the original DBIx::Class license with DBIO
+attribution. Non-heritage distributions use a standard Perl_5 license.
+
+=head2 Driver distributions (default)
+
+Version is taken from git tags via L<Dist::Zilla::PluginBundle::Git::VersionManager>.
+For brand-new distributions without any tags yet, the first version will be
+C<0.900000>. The release workflow uses
+C<@Git::VersionManager> (which includes NextRelease), followed by
+L<Dist::Zilla::Plugin::ConfirmRelease>, L<Dist::Zilla::Plugin::UploadToCPAN>,
+and L<Dist::Zilla::Plugin::Git::Push>.
+
+=head2 Heritage distributions (C<heritage = 1>)
+
+For distributions containing code derived from L<DBIx::Class>. Uses
+L<Pod::Weaver::PluginBundle::DBIO::Heritage> which adds a DBIx::Class
+copyright and attribution block to the generated POD. The C<copyright_holder>
+defaults to C<DBIO & DBIx::Class Authors>.
+
+=head2 Core distribution (C<core = 1>)
+
+Uses L<Dist::Zilla::Plugin::VersionFromMainModule> (version from C<$VERSION>
+in the main module) and L<Dist::Zilla::Plugin::MakeMaker::Awesome> instead
+of the standard MakeMaker. Also enables L<Dist::Zilla::Plugin::ExecDir> for
+F<script/>. The release workflow uses NextRelease + Git::Commit/Tag/Push
+directly rather than C<@Git::VersionManager>.
 
 =attr core
 
-Set to 1 for DBIO core. Changes version handling and MakeMaker.
+Set to 1 for the DBIO core distribution. Switches to
+L<Dist::Zilla::Plugin::VersionFromMainModule> for versioning,
+L<Dist::Zilla::Plugin::MakeMaker::Awesome> for building, enables
+L<Dist::Zilla::Plugin::ExecDir> for F<script/>, and uses a simplified
+git release workflow without C<@Git::VersionManager>.
 
 =cut
 
@@ -65,8 +109,12 @@ has core => (
 
 =attr heritage
 
-Set to 1 for distributions derived from DBIx::Class code. Adds DBIx::Class
-copyright attribution to generated POD. Default: 0.
+Set to 1 for distributions derived from L<DBIx::Class> code. Switches
+L<Dist::Zilla::Plugin::PodWeaver> to use
+L<Pod::Weaver::PluginBundle::DBIO::Heritage> instead of
+L<Pod::Weaver::PluginBundle::DBIO>, which adds a DBIx::Class copyright and
+attribution block to the generated POD. Also changes the default
+C<copyright_holder> to C<DBIO & DBIx::Class Authors>. Default: 0.
 
 =cut
 
@@ -95,10 +143,10 @@ has copyright_holder => (
 sub configure {
   my ($self) = @_;
 
-  # Set copyright_holder on the zilla object
+  # Set copyright_holder via an inner BeforeBuild plugin — bundles have no $self->zilla
   my $holder = $self->copyright_holder
     // ( $self->heritage ? 'DBIO & DBIx::Class Authors' : 'DBIO Authors' );
-  $self->zilla->meta->get_attribute('copyright_holder')->set_value($self->zilla, $holder);
+  $self->add_plugins([ 'DBIO::SetCopyrightHolder' => { holder => $holder } ]);
 
   # LICENSE is always committed in the repo and gathered from git.
   my @exclude_filenames = qw(
@@ -207,4 +255,20 @@ sub configure {
 
 __PACKAGE__->meta->make_immutable;
 
+no Moose;
+
+package Dist::Zilla::Plugin::DBIO::SetCopyrightHolder;
+use Moose;
+with 'Dist::Zilla::Role::Plugin', 'Dist::Zilla::Role::BeforeBuild';
+
+has holder => (is => 'ro', isa => 'Str', required => 1);
+
+sub before_build {
+  my ($self) = @_;
+  my $zilla = $self->zilla;
+  my ($attr) = grep { $_->name eq '_copyright_holder' } $zilla->meta->get_all_attributes;
+  $attr->set_value($zilla, $self->holder);
+}
+
+__PACKAGE__->meta->make_immutable;
 no Moose;

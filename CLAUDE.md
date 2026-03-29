@@ -56,10 +56,21 @@ copyright_holder = DBIO Contributors
 
 Uses itself via `[Bootstrap::lib]` for self-bootstrapping.
 
+## Versioning — NEVER bump $VERSION manually
+
+`$VERSION` in the module is managed by `RewriteVersion::Transitional` (part of
+`@Git::VersionManager`). It is rewritten automatically during `dzil release`
+based on the git tag. **Never edit `$VERSION` by hand.** The value in the source
+between releases is the *previous* released version — that is correct and
+intentional.
+
+Similarly, never add a version line to `Changes` — `{{$NEXT}}` is filled in by
+`NextRelease` during `dzil release`. Just add bullet points under `{{$NEXT}}`.
+
 ## Standard Commands
 
 ```bash
 dzil build      # build and check
 dzil test       # run tests
-dzil release    # release to CPAN
+dzil release    # release to CPAN — must be run by the user, not by AI
 ```
