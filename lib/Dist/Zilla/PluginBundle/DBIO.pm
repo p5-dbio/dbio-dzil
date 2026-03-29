@@ -7,31 +7,30 @@ with 'Dist::Zilla::Role::PluginBundle::Easy';
 
 =head1 SYNOPSIS
 
-  # New DBIO distribution — LICENSE committed in repo
-  name = DBIO-PostgreSQL-Async
-  author = DBIO Authors
+  # Standard DBIO driver distribution
+  name    = DBIO-MyDriver
+  author  = DBIO Authors
   license = Perl_5
 
   [@DBIO]
 
-  # Distribution derived from DBIx::Class code — LICENSE committed in repo
-  name = DBIO-PostgreSQL
-  author = DBIO & DBIx::Class Authors
+  # Distribution containing code derived from DBIx::Class
+  name    = DBIO-PostgreSQL
+  author  = DBIO & DBIx::Class Authors
   license = Perl_5
 
   [@DBIO]
   heritage = 1
 
-  # DBIO core — copyright from 2005, explicit copyright_holder override
-  name = DBIO
-  author = DBIx::Class & DBIO Contributors (see AUTHORS file)
-  license = Perl_5
+  # DBIO core distribution
+  name           = DBIO
+  author         = DBIx::Class & DBIO Contributors (see AUTHORS file)
+  license        = Perl_5
   copyright_year = 2005
 
   [@DBIO]
-  core = 1
+  core    = 1
   heritage = 1
-  copyright_holder = DBIO Contributors
 
 =head1 DESCRIPTION
 
