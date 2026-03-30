@@ -76,7 +76,7 @@ defaults to C<DBIO & DBIx::Class Authors>.
 Uses L<Dist::Zilla::Plugin::VersionFromMainModule> (version from C<$VERSION>
 in the main module) and L<Dist::Zilla::Plugin::MakeMaker::Awesome> instead
 of the standard MakeMaker. Also enables L<Dist::Zilla::Plugin::ExecDir> for
-F<script/>. The release workflow uses NextRelease + Git::Commit/Tag/Push
+F<bin/>. The release workflow uses NextRelease + Git::Commit/Tag/Push
 directly rather than C<@Git::VersionManager>.
 
 =attr core
@@ -84,7 +84,7 @@ directly rather than C<@Git::VersionManager>.
 Set to 1 for the DBIO core distribution. Switches to
 L<Dist::Zilla::Plugin::VersionFromMainModule> for versioning,
 L<Dist::Zilla::Plugin::MakeMaker::Awesome> for building, enables
-L<Dist::Zilla::Plugin::ExecDir> for F<script/>, and uses a simplified
+L<Dist::Zilla::Plugin::ExecDir> for F<bin/>, and uses a simplified
 git release workflow without C<@Git::VersionManager>.
 
 =cut
@@ -192,7 +192,7 @@ sub configure {
   # Build — core uses MakeMaker::Awesome
   if ($self->core) {
     $self->add_plugins([ 'MakeMaker::Awesome' => { eumm_version => '6.78' } ]);
-    $self->add_plugins([ 'ExecDir' => { dir => 'script' } ]);
+    $self->add_plugins([ 'ExecDir' => { dir => 'bin' } ]);
   } else {
     $self->add_plugins('MakeMaker');
   }
