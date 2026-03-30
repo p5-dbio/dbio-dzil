@@ -143,7 +143,7 @@ sub configure {
 
   # LICENSE is always committed in the repo and gathered from git.
   my @exclude_filenames = qw(
-    META.yml META.json MANIFEST README CLAUDE.md
+    META.yml META.json MANIFEST README CLAUDE.md .proverc
   );
 
   my @exclude_match;
